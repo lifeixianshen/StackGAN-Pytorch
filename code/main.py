@@ -30,8 +30,7 @@ def parse_args():
     parser.add_argument('--gpu',  dest='gpu_id', type=str, default='0')
     parser.add_argument('--data_dir', dest='data_dir', type=str, default='')
     parser.add_argument('--manualSeed', type=int, help='manual seed')
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 if __name__ == "__main__":
     args = parse_args()
@@ -51,8 +50,7 @@ if __name__ == "__main__":
         torch.cuda.manual_seed_all(args.manualSeed)
     now = datetime.datetime.now(dateutil.tz.tzlocal())
     timestamp = now.strftime('%Y_%m_%d_%H_%M_%S')
-    output_dir = '../output/%s_%s_%s' % \
-                 (cfg.DATASET_NAME, cfg.CONFIG_NAME, timestamp)
+    output_dir = f'../output/{cfg.DATASET_NAME}_{cfg.CONFIG_NAME}_{timestamp}'
 
     num_gpu = len(cfg.GPU_ID.split(','))
     if cfg.TRAIN.FLAG:
@@ -72,6 +70,6 @@ if __name__ == "__main__":
         algo = GANTrainer(output_dir)
         algo.train(dataloader, cfg.STAGE)
     else:
-        datapath= '%s/test/val_captions.t7' % (cfg.DATA_DIR)
+        datapath = f'{cfg.DATA_DIR}/test/val_captions.t7'
         algo = GANTrainer(output_dir)
         algo.sample(datapath, cfg.STAGE)

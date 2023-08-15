@@ -121,7 +121,7 @@ class GANTrainer(object):
         batch_size = self.batch_size
         noise = Variable(torch.FloatTensor(batch_size, nz))
         fixed_noise = \
-            Variable(torch.FloatTensor(batch_size, nz).normal_(0, 1),
+                Variable(torch.FloatTensor(batch_size, nz).normal_(0, 1),
                      volatile=True)
         real_labels = Variable(torch.FloatTensor(batch_size).fill_(1))
         fake_labels = Variable(torch.FloatTensor(batch_size).fill_(0))
@@ -133,12 +133,9 @@ class GANTrainer(object):
         discriminator_lr = cfg.TRAIN.DISCRIMINATOR_LR
         lr_decay_step = cfg.TRAIN.LR_DECAY_EPOCH
         optimizerD = \
-            optim.Adam(netD.parameters(),
+                optim.Adam(netD.parameters(),
                        lr=cfg.TRAIN.DISCRIMINATOR_LR, betas=(0.5, 0.999))
-        netG_para = []
-        for p in netG.parameters():
-            if p.requires_grad:
-                netG_para.append(p)
+        netG_para = [p for p in netG.parameters() if p.requires_grad]
         optimizerG = optim.Adam(netG_para,
                                 lr=cfg.TRAIN.GENERATOR_LR,
                                 betas=(0.5, 0.999))
@@ -170,14 +167,14 @@ class GANTrainer(object):
                 noise.data.normal_(0, 1)
                 inputs = (txt_embedding, noise)
                 _, fake_imgs, mu, logvar = \
-                    nn.parallel.data_parallel(netG, inputs, self.gpus)
+                        nn.parallel.data_parallel(netG, inputs, self.gpus)
 
                 ############################
                 # (3) Update D network
                 ###########################
                 netD.zero_grad()
                 errD, errD_real, errD_wrong, errD_fake = \
-                    compute_discriminator_loss(netD, real_imgs, fake_imgs,
+                        compute_discriminator_loss(netD, real_imgs, fake_imgs,
                                                real_labels, fake_labels,
                                                mu, self.gpus)
                 errD.backward()
@@ -212,7 +209,7 @@ class GANTrainer(object):
                     # save the image result for each epoch
                     inputs = (txt_embedding, fixed_noise)
                     lr_fake, fake, _, _ = \
-                        nn.parallel.data_parallel(netG, inputs, self.gpus)
+                            nn.parallel.data_parallel(netG, inputs, self.gpus)
                     save_img_results(real_img_cpu, fake, epoch, self.image_dir)
                     if lr_fake is not None:
                         save_img_results(None, lr_fake, epoch, self.image_dir)

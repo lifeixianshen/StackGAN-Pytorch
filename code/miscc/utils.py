@@ -15,8 +15,7 @@ import torchvision.utils as vutils
 def KL_loss(mu, logvar):
     # -0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
     KLD_element = mu.pow(2).add_(logvar.exp()).mul_(-1).add_(1).add_(logvar)
-    KLD = torch.mean(KLD_element).mul_(-0.5)
-    return KLD
+    return torch.mean(KLD_element).mul_(-0.5)
 
 
 def compute_discriminator_loss(netD, real_imgs, fake_imgs,
@@ -95,13 +94,11 @@ def weights_init(m):
 #############################
 def save_img_results(data_img, fake, epoch, image_dir):
     num = cfg.VIS_COUNT
-    fake = fake[0:num]
+    fake = fake[:num]
     # data_img is changed to [0,1]
     if data_img is not None:
-        data_img = data_img[0:num]
-        vutils.save_image(
-            data_img, '%s/real_samples.png' % image_dir,
-            normalize=True)
+        data_img = data_img[:num]
+        vutils.save_image(data_img, f'{image_dir}/real_samples.png', normalize=True)
         # fake.data is still [-1, 1]
         vutils.save_image(
             fake.data, '%s/fake_samples_epoch_%03d.png' %
@@ -116,9 +113,7 @@ def save_model(netG, netD, epoch, model_dir):
     torch.save(
         netG.state_dict(),
         '%s/netG_epoch_%d.pth' % (model_dir, epoch))
-    torch.save(
-        netD.state_dict(),
-        '%s/netD_epoch_last.pth' % (model_dir))
+    torch.save(netD.state_dict(), f'{model_dir}/netD_epoch_last.pth')
     print('Save G/D models')
 
 
@@ -126,7 +121,5 @@ def mkdir_p(path):
     try:
         os.makedirs(path)
     except OSError as exc:  # Python >2.5
-        if exc.errno == errno.EEXIST and os.path.isdir(path):
-            pass
-        else:
+        if exc.errno != errno.EEXIST or not os.path.isdir(path):
             raise

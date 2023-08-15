@@ -26,10 +26,7 @@ class TextDataset(data.Dataset):
         self.imsize = imsize
         self.data = []
         self.data_dir = data_dir
-        if data_dir.find('birds') != -1:
-            self.bbox = self.load_bbox()
-        else:
-            self.bbox = None
+        self.bbox = self.load_bbox() if data_dir.find('birds') != -1 else None
         split_dir = os.path.join(data_dir, split)
 
         self.filenames = self.load_filenames(split_dir)
@@ -82,7 +79,7 @@ class TextDataset(data.Dataset):
     def load_all_captions(self):
         caption_dict = {}
         for key in self.filenames:
-            caption_name = '%s/text/%s.txt' % (self.data_dir, key)
+            caption_name = f'{self.data_dir}/text/{key}.txt'
             captions = self.load_captions(caption_name)
             caption_dict[key] = captions
         return caption_dict
@@ -131,14 +128,14 @@ class TextDataset(data.Dataset):
         #
         if self.bbox is not None:
             bbox = self.bbox[key]
-            data_dir = '%s/CUB_200_2011' % self.data_dir
+            data_dir = f'{self.data_dir}/CUB_200_2011'
         else:
             bbox = None
             data_dir = self.data_dir
 
         # captions = self.captions[key]
         embeddings = self.embeddings[index, :, :]
-        img_name = '%s/images/%s.jpg' % (data_dir, key)
+        img_name = f'{data_dir}/images/{key}.jpg'
         img = self.get_img(img_name, bbox)
 
         embedding_ix = random.randint(0, embeddings.shape[0]-1)

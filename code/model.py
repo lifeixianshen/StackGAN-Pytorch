@@ -13,12 +13,12 @@ def conv3x3(in_planes, out_planes, stride=1):
 
 # Upsale the spatial size by a factor of 2
 def upBlock(in_planes, out_planes):
-    block = nn.Sequential(
+    return nn.Sequential(
         nn.Upsample(scale_factor=2, mode='nearest'),
         conv3x3(in_planes, out_planes),
         nn.BatchNorm2d(out_planes),
-        nn.ReLU(True))
-    return block
+        nn.ReLU(True),
+    )
 
 
 class ResBlock(nn.Module):
@@ -183,9 +183,7 @@ class STAGE1_D(nn.Module):
         self.get_uncond_logits = None
 
     def forward(self, image):
-        img_embedding = self.encode_img(image)
-
-        return img_embedding
+        return self.encode_img(image)
 
 
 # ############# Networks for stageII GAN #############
@@ -202,9 +200,7 @@ class STAGE2_G(nn.Module):
         self.define_module()
 
     def _make_layer(self, block, channel_num):
-        layers = []
-        for i in range(cfg.GAN.R_NUM):
-            layers.append(block(channel_num))
+        layers = [block(channel_num) for _ in range(cfg.GAN.R_NUM)]
         return nn.Sequential(*layers)
 
     def define_module(self):
@@ -299,6 +295,4 @@ class STAGE2_D(nn.Module):
         self.get_uncond_logits = D_GET_LOGITS(ndf, nef, bcondition=False)
 
     def forward(self, image):
-        img_embedding = self.encode_img(image)
-
-        return img_embedding
+        return self.encode_img(image)
